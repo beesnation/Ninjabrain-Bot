@@ -12,18 +12,18 @@ public class RayApproximatedPrior implements IPrior {
 	ArrayList<Chunk> chunks;
 	DivineContext divineContext;
 	
-	public RayApproximatedPrior(Ray r, DivineContext divineContext) {
+	public RayApproximatedPrior(IRay r, DivineContext divineContext) {
 		this(r, 1.0 / 180.0 * Math.PI, divineContext); // 1 degree tolerance
 	}
 
-	public RayApproximatedPrior(Ray r, double tolerance, DivineContext divineContext) {
+	public RayApproximatedPrior(IRay r, double tolerance, DivineContext divineContext) {
 		long t0 = System.currentTimeMillis();
 		this.divineContext = divineContext;
 		construct(r, tolerance);
 		System.out.println("Time to construct prior: " + (System.currentTimeMillis() - t0)/1000f + " seconds.");
 	}
 	
-	private void construct(Ray r, double tolerance) {
+	private void construct(IRay r, double tolerance) {
 		double range = 5000.0 / 16;
 		chunks = new ArrayList<Chunk>();
 		double phi = r.alpha() / 180.0 * Math.PI;

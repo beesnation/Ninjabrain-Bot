@@ -11,6 +11,7 @@ import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,13 +24,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import ninjabrainbot.Main;
-import ninjabrainbot.calculator.BlindResult;
-import ninjabrainbot.calculator.Calculator;
-import ninjabrainbot.calculator.CalculatorResult;
-import ninjabrainbot.calculator.DivineContext;
-import ninjabrainbot.calculator.DivineResult;
-import ninjabrainbot.calculator.Fossil;
-import ninjabrainbot.calculator.Throw;
+import ninjabrainbot.calculator.*;
 import ninjabrainbot.gui.components.CalibrationPanel;
 import ninjabrainbot.gui.components.EnderEyePanel;
 import ninjabrainbot.gui.components.MainButtonPanel;
@@ -67,10 +62,10 @@ public class GUI {
 
 	public static final int MAX_THROWS = 10;
 	private final Calculator calculator;
-	private ArrayList<Throw> eyeThrows;
-	private ArrayList<Throw> eyeThrowsLast;
-	private Throw playerPos;
-	private Throw playerPosLast;
+	private ArrayList<IThrow> eyeThrows;
+	private ArrayList<IThrow> eyeThrowsLast;
+	private IThrow playerPos;
+	private IThrow playerPosLast;
 	private DivineContext divineContext;
 	private DivineContext divineContextLast;
 
@@ -290,7 +285,7 @@ public class GUI {
 	public void resetThrows() {
 		mainTextArea.onReset();
 		if (eyeThrows.size() > 0 || divineContext != null) {
-			ArrayList<Throw> temp = eyeThrowsLast;
+			ArrayList<IThrow> temp = eyeThrowsLast;
 			eyeThrowsLast = eyeThrows;
 			eyeThrows = temp;
 			eyeThrows.clear();
@@ -305,19 +300,19 @@ public class GUI {
 
 	public void undo() {
 		setTargetLocked(false);
-		ArrayList<Throw> temp = eyeThrowsLast;
+		ArrayList<IThrow> temp = eyeThrowsLast;
 		eyeThrowsLast = eyeThrows;
 		eyeThrows = temp;
 		DivineContext temp2 = divineContextLast;
 		divineContextLast = divineContext;
 		divineContext = temp2;
-		Throw temp3 = playerPosLast;
+		IThrow temp3 = playerPosLast;
 		playerPosLast = playerPos;
 		playerPos = temp3;
 		onThrowsUpdated();
 	}
 
-	public void removeThrow(Throw t) {
+	public void removeThrow(IThrow t) {
 		if (eyeThrows.contains(t)) {
 			saveThrowsForUndo();
 			eyeThrows.remove(t);
@@ -351,12 +346,23 @@ public class GUI {
 					}
 					return;
 				}
-				if (i < MAX_THROWS) {
-					if (i > 0 && (targetLocked || t.lookingBelowHorizon())) {
-						updateWithNewPlayerPos(t);
-					} else if (!targetLocked && !t.lookingBelowHorizon()) {
-						updateWithNewThrow(t, i);
+				if (i > 0 && targetLocked) {
+					updateWithNewPlayerPos(t);
+				}  else if (i < MAX_THROWS) {
+					IThrow t2 = t;
+					if (!t.lookingBelowHorizon()) {
+						for (int j = 0; j < eyeThrows.size(); j++) {
+							if (eyeThrows.get(j).lookingBelowHorizon()) {
+								OffsetThrow t3 = new OffsetThrow(eyeThrows.get(j), t, false);
+								if (t3.isValid()) {
+									i = j;
+									t2 = t3;
+									break;
+								}
+							}
+						}
 					}
+					updateWithNewThrow(t2, i);
 				}
 			} else {
 				Fossil f = Fossil.parseF3I(clipboard);
@@ -377,15 +383,18 @@ public class GUI {
 		}
 	}
 
-	private void updateWithNewThrow(Throw t, int index) {
+	private void updateWithNewThrow(IThrow t, int index) {
 		saveThrowsForUndo();
-		eyeThrows.add(t);
+		if (index < eyeThrows.size())
+			eyeThrows.set(index, t);
+		else
+			eyeThrows.add(t);
 		enderEyePanel.setThrow(index, t);
 		playerPos = t;
 		onThrowsUpdated();
 	}
 
-	private void updateWithNewPlayerPos(Throw updateThrow) {
+	private void updateWithNewPlayerPos(IThrow updateThrow) {
 		saveThrowsForUndo();
 		playerPos = updateThrow;
 		onThrowsUpdated();
@@ -397,9 +406,8 @@ public class GUI {
 			if (i == -1) {
 				return;
 			}
-			Throw last = eyeThrows.get(i);
-			Throw t = new Throw(last.x, last.z, last.alpha + delta, last.beta, last.correction + delta, last.altStd,
-					last.isNether(), last.manualInput);
+			IThrow last = eyeThrows.get(i);
+			IThrow t = last.withAddedCorrection(delta);
 			saveThrowsForUndo();
 			eyeThrows.remove(last);
 			eyeThrows.add(t);
@@ -416,8 +424,8 @@ public class GUI {
 			if (i == -1) {
 				return;
 			}
-			Throw last = eyeThrows.get(i);
-			Throw t = last.withToggledSTD();
+			IThrow last = eyeThrows.get(i);
+			IThrow t = last.withToggledSTD();
 			saveThrowsForUndo();
 			eyeThrows.remove(last);
 			eyeThrows.add(t);
@@ -455,16 +463,22 @@ public class GUI {
 	}
 
 	private void onThrowsUpdated() {
-		if (eyeThrows.size() == 0 && divineContext != null) {
+		ArrayList<IThrow> completeEyeThrows = new ArrayList<>();
+		for (IThrow t : eyeThrows) {
+			if (t.lookingBelowHorizon()) break;
+			completeEyeThrows.add(t);
+		}
+
+		if (completeEyeThrows.size() == 0 && divineContext != null) {
 			DivineResult result = calculator.divine(divineContext.fossil);
 			mainTextArea.setResult(result, this);
 			enderEyePanel.setErrors(null);
 		} else {
 			CalculatorResult result = null;
 			double[] errors = null;
-			if (eyeThrows.size() >= 1) {
+			if (completeEyeThrows.size() >= 1) {
 				System.out.println(playerPos);
-				result = calculator.triangulate(eyeThrows, divineContext, playerPos);
+				result = calculator.triangulate(completeEyeThrows, divineContext, playerPos);
 				if (result.success()) {
 					errors = result.getAngleErrors();
 				}

@@ -5,11 +5,9 @@ import ninjabrainbot.Main;
 /**
  * Represents an eye of ender throw.
  */
-public class Throw implements Ray {
-
-	// correction is how much the angle has been corrected, only used for display purposes (the correction has already been added to alpha)
-	public final double x, z, alpha, beta, correction;
-	public final boolean manualInput, altStd;
+public class Throw implements IThrow {
+	private final double x, z, alpha_0, beta, correction;
+	private final boolean manualInput, altStd;
 
 	private final boolean nether;
 	
@@ -20,7 +18,7 @@ public class Throw implements Ray {
 	public Throw(double x, double z, double alpha, double beta, double correction, boolean altStd, boolean nether) {
 		this(x, z, alpha, beta, correction, altStd, nether, false);
 	}
-	
+
 	public Throw(double x, double z, double alpha, double beta, double correction, boolean altStd, boolean nether, boolean manualInput) {
 		this.x = x;
 		this.z = z;
@@ -31,16 +29,16 @@ public class Throw implements Ray {
 		} else if (alpha > 180.0) {
 			alpha -= 360.0;
 		}
-		this.alpha = alpha;
+		this.alpha_0 = alpha;
 		this.beta = beta;
 		this.altStd = altStd;
 		this.nether = nether;
 		this.manualInput = manualInput;
 	}
-	
+
 	@Override
 	public String toString() {
-		return "x=" + x + ", z=" + z + ", alpha=" + alpha;
+		return "x=" + x + ", z=" + z + ", alpha=" + alpha_0;
 	}
 
 	/**
@@ -82,18 +80,16 @@ public class Throw implements Ray {
 			return null;
 		}
 	}
-	
-	/**
-	 * Returns the squared distance between this throw and the given throw.
-	 */
-	public double distance2(Throw other) {
-		double dx = x - other.x;
-		double dz = z - other.z;
-		return dx * dx + dz * dz;
+
+	@Override
+	public Throw withAddedCorrection(double delta)
+	{
+		return new Throw(x, z, alpha_0, beta, correction + delta, altStd, isNether(), manualInput);
 	}
-	
+
+	@Override
 	public Throw withToggledSTD() {
-		return new Throw(x, z, alpha, beta, correction, !this.altStd, this.nether, this.manualInput);
+		return new Throw(x, z, alpha_0, beta, correction, !this.altStd, this.nether, this.manualInput);
 	}
 	
 	public boolean lookingBelowHorizon() {
@@ -111,9 +107,31 @@ public class Throw implements Ray {
 	}
 
 	@Override
-	public double alpha() {
-		return alpha;
+	public boolean altStd() { return altStd; }
+
+	@Override
+	public boolean manualInput() { return manualInput; }
+
+	@Override
+	public double alpha_0() {
+		return alpha_0;
 	}
+
+	@Override
+	public double alpha() {
+		return alpha_0 + correction;
+	}
+
+	@Override
+	public double beta() { return beta; }
+	public double correction() { return correction; }
+
+	@Override
+	public double getStd(StdSettings stds) {
+		if (manualInput) return stds.sigmaManual;
+		return altStd ? stds.sigmaAlt : stds.sigma;
+	}
+
 
 	public boolean isNether() {
 		return nether;

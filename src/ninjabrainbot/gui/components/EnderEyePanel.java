@@ -6,7 +6,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 
 import ninjabrainbot.calculator.DivineContext;
-import ninjabrainbot.calculator.Throw;
+import ninjabrainbot.calculator.IThrow;
 import ninjabrainbot.gui.GUI;
 import ninjabrainbot.gui.TextAnimator;
 
@@ -45,7 +45,7 @@ public class EnderEyePanel extends JPanel implements ThemedComponent {
 		}
 	}
 
-	public void setThrow(int i, Throw t) {
+	public void setThrow(int i, IThrow t) {
 		throwPanels[i].setThrow(t);
 		textAnimator.setJThrowPanel(throwPanels[i]);
 	}
@@ -60,7 +60,7 @@ public class EnderEyePanel extends JPanel implements ThemedComponent {
 		}
 	}
 
-	public void setThrows(List<Throw> eyeThrows, DivineContext dc) {
+	public void setThrows(List<IThrow> eyeThrows, DivineContext dc) {
 		divineContextPanel.setDivineContext(dc);
 		for (int i = 0; i < throwPanels.length; i++) {
 			ThrowPanel throwPanel = throwPanels[i];

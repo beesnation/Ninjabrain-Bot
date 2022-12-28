@@ -6,20 +6,18 @@ import java.util.List;
 public class CalculatorResult {
 	
 	Posterior posterior;
-	ArrayList<Throw> eyeThrows;
+	ArrayList<IThrow> eyeThrows;
 	ChunkPrediction bestPrediction = new ChunkPrediction();
 	private final List<ChunkPrediction> topPredictions = new ArrayList<>();
-	private Throw playerPos;
+	private IThrow playerPos;
 
 	public CalculatorResult() {}
 	
-	public CalculatorResult(Posterior posterior, ArrayList<Throw> eyeThrows, Throw playerPos) {
+	public CalculatorResult(Posterior posterior, ArrayList<IThrow> eyeThrows, IThrow playerPos) {
 		this.posterior = posterior;
-		this.eyeThrows = new ArrayList<Throw>();
+		this.eyeThrows = new ArrayList<>();
 		this.playerPos = playerPos;
-		for (Throw t : eyeThrows) {
-			this.eyeThrows.add(t);
-		}
+		this.eyeThrows.addAll(eyeThrows);
 		// Find chunk with largest posterior probability
 		Chunk predictedChunk = posterior.getMostProbableChunk();
 		bestPrediction = new ChunkPrediction(predictedChunk, playerPos);

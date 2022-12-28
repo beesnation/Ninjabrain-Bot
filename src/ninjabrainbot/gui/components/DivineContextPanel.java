@@ -32,7 +32,7 @@ public class DivineContextPanel extends ThemedPanel {
 		super(gui);
 		setOpaque(true);
 		label = new JLabel((String) null, 0);
-		removeButton = new FlatButton(gui, "–") {
+		removeButton = new FlatButton(gui, "â€“") {
 			static final long serialVersionUID = -7702064148275208581L;
 			@Override
 			public Color getHoverColor(Theme theme) {

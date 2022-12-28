@@ -8,11 +8,8 @@ import ninjabrainbot.util.Coords;
 import ninjabrainbot.util.Pair;
 
 public class Calculator {
-
-	double sigma;
-	double sigmaAlt;
-	double sigmaManual;
 	// Used only for pixel correction
+	StdSettings stds;
 	int yRes = 1080;
 	int fov = 30;
 
@@ -29,37 +26,33 @@ public class Calculator {
 	}
 	
 	public Calculator(double sigma, double sigmaAlt, double sigmaManual) {
-		this.sigma = sigma;
-		this.sigmaAlt = sigmaAlt;
-		this.sigmaManual = sigmaManual;
+		this.stds = new StdSettings(sigma, sigmaAlt, sigmaManual);
 	}
 
 	public void setSigma(double sigma) {
-		this.sigma = sigma;
+		this.stds.sigma = sigma;
 	}
 	
 	public void setSigmaAlt(double sigmaAlt) {
-		this.sigmaAlt = sigmaAlt;
+		this.stds.sigmaAlt = sigmaAlt;
 	}
 	
-	public void setSigmaManual(double sigmaManual) {
-		this.sigmaManual = sigmaManual;
-	}
+	public void setSigmaManual(double sigmaManual) {this.stds.sigmaManual = sigmaManual; }
 
-	public CalculatorResult triangulate(ArrayList<Throw> eyeThrows, DivineContext divineContext, Throw playerPos) {
+	public CalculatorResult triangulate(ArrayList<IThrow> eyeThrows, DivineContext divineContext, IThrow playerPos) {
 		if (eyeThrows.size() == 0)
 			return new CalculatorResult();
 		long t0 = System.currentTimeMillis();
 		// Calculate posteriors
-		Posterior posterior = new Posterior(sigma, sigmaAlt, sigmaManual, eyeThrows, divineContext);
+		Posterior posterior = new Posterior(stds, eyeThrows, divineContext);
 		System.out.println("Time to triangulate: " + (System.currentTimeMillis() - t0)/1000f + " seconds.");
 		return new CalculatorResult(posterior, eyeThrows, playerPos);
 	}
 	
-	public Posterior getPosterior(ArrayList<Throw> eyeThrows, DivineContext divineContext) {
+	public Posterior getPosterior(ArrayList<IThrow> eyeThrows, DivineContext divineContext) {
 		if (eyeThrows.size() == 0)
 			return null;
-		Posterior posterior = new Posterior(sigma, sigmaAlt, sigmaManual, eyeThrows, divineContext);
+		Posterior posterior = new Posterior(stds, eyeThrows, divineContext);
 		return posterior;
 	}
 	

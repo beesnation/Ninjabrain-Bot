@@ -17,7 +17,7 @@ public class ChunkPrediction extends Chunk {
 	/**
 	 * Creates a triangulation result.
 	 */
-	public ChunkPrediction(Chunk chunk, Throw playerPos) {
+	public ChunkPrediction(Chunk chunk, IThrow playerPos) {
 		super(chunk.x, chunk.z, chunk.weight);
 		this.fourfour_x = 16 * chunk.x + 4;
 		this.fourfour_z = 16 * chunk.z + 4;
@@ -27,10 +27,10 @@ public class ChunkPrediction extends Chunk {
 		}
 	}
 
-	private void updateWithPlayerPos(Throw playerPos) {
+	private void updateWithPlayerPos(IThrow playerPos) {
 		distance = getDistance(playerPos);
-		double playerX = playerPos.x;
-		double playerZ = playerPos.z;
+		double playerX = playerPos.x();
+		double playerZ = playerPos.z();
 		if (playerPos.isNether()) {
 			playerX *= 8;
 			playerZ *= 8;
@@ -39,8 +39,8 @@ public class ChunkPrediction extends Chunk {
 		double zDiff = fourfour_z + 4 - playerZ;
 
 		double newAngle = -Math.atan2(xDiff, zDiff) * 180 / Math.PI;
-		double simpleDiff = newAngle - playerPos.alpha;
-		double adjustedDiff = ((newAngle + 360) % 360) - ((playerPos.alpha + 360) % 360);
+		double simpleDiff = newAngle - playerPos.alpha();
+		double adjustedDiff = ((newAngle + 360) % 360) - ((playerPos.alpha() + 360) % 360);
 		double finalDiff = Math.abs(adjustedDiff) < Math.abs(simpleDiff) ? adjustedDiff : simpleDiff;
 
 		this.travelAngle = newAngle;
