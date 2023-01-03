@@ -31,8 +31,10 @@ public class OffsetThrow implements IThrow
 
     private static boolean isInaccuratePosition(IRay pos)
     {
-        return (pos.x() != 0.3 && pos.x() != 0.5 && pos.x() != 0.7)
-                || (pos.z() != 0.3 && pos.z() != 0.5 && pos.z() != 0.7);
+        int x = (int) Math.round(Math.abs(pos.x())*100) % 100;
+        int z = (int) Math.round(Math.abs(pos.z())*100) % 100;
+        return (x != 30 && x != 50 && x != 70) ||
+                (z != 30 && z != 50 && z != 70);
     }
 
     public String toString() {
