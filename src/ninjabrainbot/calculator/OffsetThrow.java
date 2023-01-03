@@ -14,7 +14,7 @@ public class OffsetThrow implements IThrow
     private final boolean passedEyeTangent;
 
     // Properties computed in constructor
-    private final double alpha_0, alpha, std_factor;
+    private final double alpha_0, alpha, std_factor, var_add;
 
     public OffsetThrow(IThrow throwPos, IThrow measurement, boolean passedEyeTangent) {
         this.throwPos = throwPos;
@@ -25,6 +25,14 @@ public class OffsetThrow implements IThrow
         Pair<Double, Double> eyeVec = computeEyeVec(measurement.alpha());
         this.alpha = angleFromEyeVec(eyeVec);
         this.std_factor = computeStdFactor(eyeVec);
+        this.var_add = computeVarAdd();
+    }
+
+
+    private static boolean isInaccuratePosition(IRay pos)
+    {
+        return (pos.x() != 0.3 && pos.x() != 0.5 && pos.x() != 0.7)
+                || (pos.z() != 0.3 && pos.z() != 0.5 && pos.z() != 0.7);
     }
 
     public String toString() {
@@ -91,6 +99,23 @@ public class OffsetThrow implements IThrow
 
         return incline_factor * conversion_factor;
     }
+    private double computeVarAdd() {
+        if (measurement.x() == throwPos.x() && measurement.z() == throwPos.z()) return 0;
+
+        final double varPerPosition = (0.01 * 0.01 / 12) * Math.pow(360 / (eyeDist * 2 * Math.PI), 2);
+        double var = 0;
+        if (isInaccuratePosition(measurement))
+            var += varPerPosition;
+        if (isInaccuratePosition(throwPos))
+            var += varPerPosition;
+        return var;
+    }
+
+    @Override
+    public double getStd(StdSettings stds) {
+        return Math.sqrt(var_add + Math.pow(std_factor * measurement.getStd(stds), 2));
+    }
+
     @Override
     public double x() { return throwPos.x(); }
     @Override
@@ -102,10 +127,7 @@ public class OffsetThrow implements IThrow
     @Override
     public double beta() {return measurement.beta();}
 
-    @Override
-    public double getStd(StdSettings stds) {
-        return std_factor * measurement.getStd(stds);
-    }
+
 
     @Override
     public double alpha_0() { return alpha_0; }
