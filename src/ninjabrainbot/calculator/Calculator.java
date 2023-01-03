@@ -9,7 +9,7 @@ import ninjabrainbot.util.Pair;
 
 public class Calculator {
 	// Used only for pixel correction
-	StdSettings stds;
+	public StdSettings stds;
 	int yRes = 1080;
 	int fov = 30;
 

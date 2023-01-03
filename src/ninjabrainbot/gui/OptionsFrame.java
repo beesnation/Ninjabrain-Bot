@@ -155,6 +155,7 @@ public class OptionsFrame extends ThemedFrame {
 		}
 		column2.add(new TextboxPanel(gui, I18n.get("settings.crosshair_correction"), Main.preferences.crosshairCorrection));
 		column2.add(new CheckboxPanel(gui, I18n.get("settings.show_angle_errors"), Main.preferences.showAngleErrors));
+		column2.add(new CheckboxPanel(gui, I18n.get("settings.show_stds"), Main.preferences.showSTDs));
 		column2.add(new CheckboxPanel(gui, I18n.get("settings.show_angle_updates"), Main.preferences.showAngleUpdates));
 		column2.add(new CheckboxPanel(gui, I18n.get("settings.use_advanced_stronghold_statistics"), Main.preferences.useAdvStatistics));
 		column2.add(new CheckboxPanel(gui, I18n.get("settings.use_alternative_clipboard_reader"), Main.preferences.altClipboardReader));

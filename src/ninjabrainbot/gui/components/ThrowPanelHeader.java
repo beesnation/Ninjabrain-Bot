@@ -24,10 +24,12 @@ public class ThrowPanelHeader extends ThemedPanel {
 	private JLabel x;
 	private JLabel z;
 	private JLabel alpha;
+	private JLabel std;
 	private JLabel error;
 	
 	private boolean errorsEnabled;
-	
+	private boolean stdEnabled;
+
 	public ThrowPanelHeader(GUI gui) {
 		this(gui, null);
 	}
@@ -36,17 +38,22 @@ public class ThrowPanelHeader extends ThemedPanel {
 		super(gui, true);
 		setOpaque(true);
 		errorsEnabled = Main.preferences.showAngleErrors.get();
+		stdEnabled = Main.preferences.showSTDs.get();
 		x = new JLabel("x", 0);
 		z = new JLabel("z", 0);
 		alpha = new JLabel(I18n.get("angle"), 0);
+		std = new JLabel("STD", 0);
 		error = new JLabel(I18n.get("error"), 0);
 		add(x);
 		add(z);
 		add(alpha);
+		add(std);
 		add(error);
 		setLayout(null);
 	}
-	
+
+
+	public void setSTDsEnabled(boolean b) { stdEnabled = b; }
 	public void setAngleErrorsEnabled(boolean e) {
 		errorsEnabled = e;
 	}
@@ -60,6 +67,8 @@ public class ThrowPanelHeader extends ThemedPanel {
 			z.setFont(font);
 		if (alpha != null)
 			alpha.setFont(font);
+		if (std != null)
+			std.setFont(font);
 		if (error != null)
 			error.setFont(font);
 	}
@@ -67,26 +76,40 @@ public class ThrowPanelHeader extends ThemedPanel {
 	@Override
 	public void setBounds(int x, int y, int width, int height) {
 		super.setBounds(x, y, width, height);
-		int w = width - 2*0 - height;
-		int y0 = -1;
-		if (!errorsEnabled) {
-			if (this.x != null)
-				this.x.setBounds(0, y0, w / 3, height);
-			if (this.z != null)
-				this.z.setBounds(0 + w / 3, y0, w / 3, height);
-			if (this.alpha != null)
-				this.alpha.setBounds(0 + 2 * w / 3, y0, w / 3, height);
-		} else {
-			if (this.x != null)
-				this.x.setBounds(0, y0, w / 4, height);
-			if (this.z != null)
-				this.z.setBounds(0 + w / 4, y0, w / 4, height);
-			if (this.alpha != null)
-				this.alpha.setBounds(0 + 2 * w / 4, y0, w / 4, height);
-			if (this.error != null)
-				this.error.setBounds(0 + 3 * w / 4, y0, w / 4, height);
-		}
+		int w = width;
+		w -= height;
+
+		int nColumns = 3;
+		if (errorsEnabled) nColumns++;
+		if (stdEnabled) nColumns++;
+		int d = w/nColumns;
+
 		error.setVisible(errorsEnabled);
+		if(errorsEnabled) {
+			w -= d;
+			if (this.error != null)
+				this.error.setBounds(w, 0, d, height);
+		}
+
+		std.setVisible(stdEnabled);
+		if(stdEnabled) {
+			w -= d;
+			if (this.std != null)
+				this.std.setBounds(w, 0, d, height);
+		}
+
+		w -= d;
+		if (this.alpha != null)
+			this.alpha.setBounds(w, 0, d, height);
+
+		w -= d;
+		if (this.x != null)
+			this.x.setBounds(w, 0, d, height);
+
+		w -= d;
+		if (this.z != null)
+			this.z.setBounds(w, 0, d, height);
+
 	}
 	
 	@Override
@@ -110,6 +133,8 @@ public class ThrowPanelHeader extends ThemedPanel {
 			z.setForeground(fg);
 		if (alpha != null)
 			alpha.setForeground(fg);
+		if (std != null)
+			std.setForeground(fg);
 		if (error != null)
 			error.setForeground(fg);
 	}

@@ -13,6 +13,7 @@ import javax.swing.border.MatteBorder;
 import com.sun.xml.internal.bind.v2.runtime.unmarshaller.ValuePropertyLoader;
 import ninjabrainbot.Main;
 import ninjabrainbot.calculator.IThrow;
+import ninjabrainbot.calculator.StdSettings;
 import ninjabrainbot.gui.GUI;
 import ninjabrainbot.gui.SizePreference;
 import ninjabrainbot.gui.Theme;
@@ -29,10 +30,11 @@ public class ThrowPanel extends ThemedPanel {
 	private JLabel z;
 	private JLabel alpha;
 	private JLabel correction;
+	private JLabel std;
 	private JLabel error;
 	private FlatButton removeButton;
 
-	private boolean errorsEnabled;
+	private boolean stdEnabled, errorsEnabled;
 	private int correctionSgn;
 	private Color colorNeg, colorPos;
 
@@ -44,10 +46,12 @@ public class ThrowPanel extends ThemedPanel {
 		super(gui);
 		setOpaque(true);
 		errorsEnabled = Main.preferences.showAngleErrors.get();
+		stdEnabled = Main.preferences.showSTDs.get();
 		x = new JLabel((String) null, 0);
 		z = new JLabel((String) null, 0);
 		alpha = new JLabel((String) null, 0);
 		correction = new JLabel((String) null, 0);
+		std = new JLabel((String) null, 0);
 		error = new JLabel((String) null, 0);
 		removeButton = new FlatButton(gui, "–") {
 			static final long serialVersionUID = -7702064148275208581L;
@@ -65,12 +69,15 @@ public class ThrowPanel extends ThemedPanel {
 		add(z);
 		add(alpha);
 		add(correction);
+		add(std);
 		add(error);
 		setLayout(null);
 		setThrow(t);
 		removeButton.addActionListener(p -> gui.removeThrow(this.t));
 	}
-	
+
+
+	public void setSTDsEnabled(boolean b) { stdEnabled = b;}
 	public void setAngleErrorsEnabled(boolean e) {
 		errorsEnabled = e;
 	}
@@ -82,7 +89,10 @@ public class ThrowPanel extends ThemedPanel {
 	public void setError(String s) {
 		error.setText(s);
 	}
-	
+
+	public void updateSTD(StdSettings stds) {
+		std.setText((t == null || t.lookingBelowHorizon()) ? null : String.format(Locale.US, "%.3f", t.getStd(stds)));
+	}
 	@Override
 	public void setFont(Font font) {
 		super.setFont(font);
@@ -94,6 +104,8 @@ public class ThrowPanel extends ThemedPanel {
 			alpha.setFont(font);
 		if (correction != null)
 			correction.setFont(font);
+		if (std != null)
+			std.setFont(font);
 		if (error != null)
 			error.setFont(font);
 		if (removeButton != null)
@@ -103,51 +115,50 @@ public class ThrowPanel extends ThemedPanel {
 	@Override
 	public void setBounds(int x, int y, int width, int height) {
 		super.setBounds(x, y, width, height);
-		int w = width - 2*0 - height;
-		if (!errorsEnabled) {
-			if (this.x != null)
-				this.x.setBounds(0, 0, w / 3, height);
-			if (this.z != null)
-				this.z.setBounds(0 + w / 3, 0, w / 3, height);
-			if (this.alpha != null) {
-				if (correctionSgn != 0) {
-					int w1 = w / 3 * 3 / 4;
-					int dx = w / 3 * 1 / 8;
-					this.alpha.setBounds(0 + 2 * w / 3 - dx, 0, w1, height);
-					this.alpha.setHorizontalAlignment(SwingConstants.RIGHT);
-					this.correction.setBounds(0 + 2 * w / 3 + w1 - dx, 0, w1, height);
-					this.correction.setHorizontalAlignment(SwingConstants.LEFT);
-				} else {
-					this.alpha.setBounds(0 + 2 * w / 3, 0, w / 3, height);
-					this.alpha.setHorizontalAlignment(SwingConstants.CENTER);
-				}
-			}
-			if (this.removeButton != null)
-				this.removeButton.setBounds(w, 0, height, height-1);
-		} else {
-			if (this.x != null)
-				this.x.setBounds(0, 0, w / 4, height);
-			if (this.z != null)
-				this.z.setBounds(0 + w / 4, 0, w / 4, height);
-			if (this.alpha != null) {
-				if (correctionSgn != 0) {
-					int w1 = w / 4 * 3 / 4;
-					int dx = w / 4 * 1 / 8;
-					this.alpha.setBounds(0 + 2 * w / 4 - dx, 0, w1, height);
-					this.alpha.setHorizontalAlignment(SwingConstants.RIGHT);
-					this.correction.setBounds(0 + 2 * w / 4 + w1 - dx, 0, w1, height);
-					this.correction.setHorizontalAlignment(SwingConstants.LEFT);
-				} else {
-					this.alpha.setBounds(0 + 2 * w / 4, 0, w / 4, height);
-					this.alpha.setHorizontalAlignment(SwingConstants.CENTER);
-				}
-			}
-			if (this.error != null)
-				this.error.setBounds(0 + 3 * w / 4, 0, w / 4, height);
-			if (this.removeButton != null)
-				this.removeButton.setBounds(w, 0, height, height-1);
-		}
+		int w = width;
+		w -= height;
+		if (this.removeButton != null)
+			this.removeButton.setBounds(w, 0, height, height-1);
+
+		int nColumns = 3;
+		if (errorsEnabled) nColumns++;
+		if (stdEnabled) nColumns++;
+		int d = w/nColumns;
+
 		error.setVisible(errorsEnabled);
+		if(errorsEnabled) {
+			w -= d;
+			if (this.error != null)
+				this.error.setBounds(w, 0, d, height);
+		}
+
+		std.setVisible(stdEnabled);
+		if(stdEnabled) {
+			w -= d;
+			if (this.std != null)
+				this.std.setBounds(w, 0, d, height);
+		}
+
+		w -= d;
+		if (this.alpha != null) {
+			if (correctionSgn == 0) {
+				this.alpha.setBounds(w, 0, d, height);
+				this.alpha.setHorizontalAlignment(SwingConstants.CENTER);
+			} else {
+				this.alpha.setBounds(w-d/3, 0, d, height);
+				this.alpha.setHorizontalAlignment(SwingConstants.RIGHT);
+				this.correction.setBounds(w+2*d/3, 0, d/2, height);
+				this.correction.setHorizontalAlignment(SwingConstants.LEFT);
+			}
+		}
+
+		w -= d;
+		if (this.x != null)
+			this.x.setBounds(w, 0, d, height);
+
+		w -= d;
+		if (this.z != null)
+			this.z.setBounds(w, 0, d, height);
 	}
 
 	@Override
@@ -161,6 +172,8 @@ public class ThrowPanel extends ThemedPanel {
 			alpha.setForeground(fg);
 		if (correction != null)
 			correction.setForeground(correctionSgn > 0 ? colorPos : colorNeg);
+		if (std != null)
+			std.setForeground(fg);
 		if (error != null)
 			error.setForeground(fg);
 	}
@@ -246,5 +259,5 @@ public class ThrowPanel extends ThemedPanel {
 		return theme.TEXT_COLOR_NEUTRAL;
 	}
 
-	
+
 }

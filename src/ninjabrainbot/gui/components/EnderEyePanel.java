@@ -7,6 +7,7 @@ import javax.swing.JPanel;
 
 import ninjabrainbot.calculator.DivineContext;
 import ninjabrainbot.calculator.IThrow;
+import ninjabrainbot.calculator.StdSettings;
 import ninjabrainbot.gui.GUI;
 import ninjabrainbot.gui.TextAnimator;
 
@@ -37,7 +38,13 @@ public class EnderEyePanel extends JPanel implements ThemedComponent {
 		}
 		textAnimator = new TextAnimator(gui, 200);
 	}
-	
+
+	public void setSTDsEnabled(boolean b) {
+		throwPanelHeader.setSTDsEnabled(b);
+		for (ThrowPanel p : throwPanels) {
+			p.setSTDsEnabled(b);
+		}
+	}
 	public void setAngleErrorsEnabled(boolean b) {
 		throwPanelHeader.setAngleErrorsEnabled(b);
 		for (ThrowPanel p : throwPanels) {
@@ -58,6 +65,10 @@ public class EnderEyePanel extends JPanel implements ThemedComponent {
 			else
 				throwPanel.setError("");
 		}
+	}
+
+	public void updateSTDs(StdSettings stds) {
+		for (ThrowPanel panel : throwPanels) panel.updateSTD(stds);
 	}
 
 	public void setThrows(List<IThrow> eyeThrows, DivineContext dc) {
@@ -81,5 +92,4 @@ public class EnderEyePanel extends JPanel implements ThemedComponent {
 	@Override
 	public void updateColors(GUI gui) {
 	}
-	
 }

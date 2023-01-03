@@ -189,6 +189,12 @@ public class GUI {
 		mainTextArea.setNetherCoordsEnabled(b);
 	}
 
+
+	public void setSTDsEnabled(boolean b) {
+		enderEyePanel.setSTDsEnabled(b);
+		updateBounds();
+	}
+
 	public void setAngleErrorsEnabled(boolean b) {
 		enderEyePanel.setAngleErrorsEnabled(b);
 		updateBounds();
@@ -492,6 +498,8 @@ public class GUI {
 		if (Main.preferences.autoReset.get()) {
 			autoResetTimer.restart();
 		}
+		// Update throw STDs
+		enderEyePanel.updateSTDs(calculator.stds);
 		// Update bounds
 		updateBounds();
 		// Update overlay

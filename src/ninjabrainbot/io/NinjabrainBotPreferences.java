@@ -9,6 +9,7 @@ import ninjabrainbot.calculator.StrongholdConstants;
 import ninjabrainbot.gui.GUI;
 import ninjabrainbot.gui.SizePreference;
 import ninjabrainbot.gui.Theme;
+import ninjabrainbot.gui.components.EnderEyePanel;
 import ninjabrainbot.util.I18n;
 
 public class NinjabrainBotPreferences {
@@ -34,6 +35,7 @@ public class NinjabrainBotPreferences {
 	public BooleanPreference alwaysOnTop;
 	public BooleanPreference showNetherCoords;
 	public BooleanPreference showAngleUpdates;
+	public BooleanPreference showSTDs;
 	public BooleanPreference showAngleErrors;
 	public BooleanPreference autoReset;
 	public BooleanPreference useAdvStatistics;
@@ -189,6 +191,12 @@ public class NinjabrainBotPreferences {
 			@Override
 			public void onChangedByUser(GUI gui) {
 				gui.setAngleUpdatesEnabled(get());
+			}
+		};
+		showSTDs = new BooleanPreference("show_stds", false, pref) {
+			@Override
+			public void onChangedByUser(GUI gui) {
+				gui.setSTDsEnabled(get());
 			}
 		};
 		showAngleErrors = new BooleanPreference("show_angle_errors", false, pref) {
